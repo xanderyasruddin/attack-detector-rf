@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score
@@ -55,6 +56,30 @@ df['label'] = df['label'].str.strip().str.rstrip('.')
 # maps specific attacks to the attack categories
 df['Attack Type'] = df['label'].map(lambda x: attack_cate.get(x, 'unknown'))
 
+attack_counts = df['Attack Type'].value_counts()
+
+# plot
+plt.figure(figsize=(10, 6))
+attack_counts.plot(kind='bar', color='green', alpha=0.8)
+plt.xlabel('Attack Category', fontsize=12, fontweight='bold')
+plt.ylabel('Count', fontsize=12, fontweight='bold')
+plt.title('Distribution of Attack Categories', fontsize=14, fontweight='bold')
+plt.xticks(rotation=45)
+
+# add value labels
+for i, v in enumerate(attack_counts):
+    plt.text(i, v, f'{v:,}', ha='center', va='bottom', fontsize=9)
+
+plt.tight_layout()
+plt.savefig('1_class_distribution.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+# attack-type distribution table
+print("\nAttack-Type Distribution Table")
+for attack, count in attack_counts.items():
+    print(f"  {attack:10s}: {count:7,} samples ({count/len(df)*100:5.2f}%)")
+
+
 # encode categorical features
 categorical_cols = ['protocol_type', 'service', 'flag']
 label_encoders = {}
@@ -89,7 +114,7 @@ y_pred = model.predict(X_test)
 
 # final performance evaluation
 accuracy = accuracy_score(y_test, y_pred)
-print(f"\nOverall Accuracy: {accuracy:.4f}")
+print(f"\nOverall Accuracy: {accuracy*100:.4f} ")
 
 print("\n---- Classification Report ----")
 print(classification_report(
